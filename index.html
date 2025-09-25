@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flmR - Potencialize sua jornada no Tibia</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Ícone da Aba -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#F86C00] text-white font-['Roboto'];
+            }
+            h1, h2, h3 {
+                @apply font-['Montserrat'];
+            }
+        }
+        @layer utilities {
+            .section-fade-in {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            }
+            .section-visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Configuração do Firebase ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "AIza...", authDomain: "...", projectId: "..." };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'flmr-bot-yourself';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // Função para configurar os listeners do Firestore
+        function setupFirestoreListeners(userId) {
+            const downloadCounterElement = document.getElementById('downloadCounter');
+            const downloadButton = document.getElementById('downloadButton');
+            const counterDocRef = doc(db, `artifacts/${appId}/public/data/downloads`, "counter");
+
+            let initialCount = 0;
+
+            // Listener em tempo real para o contador
+            const unsubscribe = onSnapshot(counterDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    initialCount = data.count;
+                    animateCounter(initialCount);
+                } else {
+                    // Se o contador não existir, cria com um número inicial
+                    initialCount = 14782; 
+                    setDoc(counterDocRef, { count: initialCount });
+                    animateCounter(initialCount);
+                }
+            }, (error) => {
+                console.error("Erro no listener do Firestore:", error);
+            });
+
+            // Função para animar o contador
+            function animateCounter(target) {
+                if (!downloadCounterElement) return;
+                let current = 0;
+                const step = Math.ceil(target / 100);
+                const interval = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        downloadCounterElement.innerText = target.toLocaleString('pt-BR');
+                        clearInterval(interval);
+                    } else {
+                        downloadCounterElement.innerText = current.toLocaleString('pt-BR');
+                    }
+                }, 20);
+            }
+            
+            // Ação do botão de download
+            if (downloadButton) {
+                downloadButton.addEventListener('click', async () => {
+                    try {
+                        const newCount = initialCount + 1;
+                        await setDoc(counterDocRef, { count: newCount }, { merge: true });
+                        // Adiciona um feedback visual
+                        downloadButton.innerText = 'DOWNLOAD INICIADO!';
+                        downloadButton.disabled = true;
+                        downloadButton.classList.remove('bg-white', 'hover:bg-gray-200', 'text-orange-600');
+                        downloadButton.classList.add('bg-green-500', 'text-white', 'cursor-not-allowed');
+                        
+                        // Simula o download e reseta o botão
+                        setTimeout(() => {
+                            downloadButton.innerText = 'BAIXAR O CLIENT flmR';
+                            downloadButton.disabled = false;
+                            downloadButton.classList.add('bg-white', 'hover:bg-gray-200', 'text-orange-600');
+                            downloadButton.classList.remove('bg-green-500', 'text-white', 'cursor-not-allowed');
+                        }, 3000);
+
+                    } catch (error) {
+                        console.error("Erro ao incrementar o download:", error);
+                    }
+                });
+            }
+        }
+
+        // --- Lógica Principal de Autenticação ---
+        (async () => {
+            try {
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        // Usuário está autenticado, configurar listeners
+                        console.log("Autenticação bem-sucedida, UID:", user.uid);
+                        setupFirestoreListeners(user.uid);
+                    } else {
+                        console.log("Usuário deslogado.");
+                    }
+                });
+
+                // Tenta autenticar
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                     await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                     await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Erro durante o processo de autenticação:", error);
+            }
+        })();
+
+        // --- Animações de Scroll ---
+        const sections = document.querySelectorAll('.section-fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('section-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+    
+    <!-- 1. Seção Principal (Topo) -->
+    <header class="min-h-screen flex flex-col items-center justify-center text-center p-8 bg-[#F86C00]">
+        <div class="space-y-6 max-w-4xl mx-auto section-fade-in">
+            <!-- Logo -->
+            <img src="logo.png" alt="Logo flmR" class="w-64 md:w-80 mx-auto mb-4" onerror="this.onerror=null;this.src='https://placehold.co/320x100/F86C00/FFFFFF?text=flmR&font=montserrat';">
+
+            <!-- Título Principal -->
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white shadow-lg">
+                Sua jornada no Tibia, potencializada.
+            </h1>
+
+            <!-- Subtítulo -->
+            <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+                flmR é a ferramenta definitiva para automatizar o tedioso e liberar você para o que realmente importa: a aventura, a estratégia e a glória.
+            </p>
+
+            <!-- Botão de Ação -->
+            <a href="#planos" class="inline-block bg-[#C81113] text-white font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-red-800 transition-transform transform hover:scale-105 duration-300">
+                VER PLANOS
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- 2. Seção de Apresentação (Apelo Emocional) -->
+        <section class="bg-[#F4F4F4] text-gray-800 py-20 lg:py-32 px-6 section-fade-in">
+            <div class="max-w-4xl mx-auto text-center space-y-8">
+                <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00]">
+                    Jogue com inteligência, não com esforço.
+                </h2>
+                <div class="text-base md:text-lg text-gray-600 space-y-4 max-w-3xl mx-auto">
+                    <p>
+                        Cansado de passar horas em hunts repetitivas apenas para manter seu level? De perder tempo com tarefas que não trazem diversão? O verdadeiro espírito do Tibia está nas quests desafiadoras, nas team hunts com amigos e na emoção do combate.
+                    </p>
+                    <p class="font-semibold">
+                        O flmR cuida do trabalho pesado. Nossa ferramenta otimiziza suas tarefas diárias de forma segura e eficiente, permitindo que você foque em dominar o jogo. Liberte seu tempo e potencialize seu progresso.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Seção de Recursos -->
+        <section class="bg-[#F86C00] py-20 lg:py-32 px-6 section-fade-in">
+            <div class="max-w-6xl mx-auto">
+                <h3 class="text-3xl md:text-5xl font-extrabold text-center text-white mb-16">
+                    Ferramentas para a Vitória
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 text-center">
+                    <!-- Recurso 1 -->
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="bg-white/20 p-5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-bold text-white">Cavehunting Avançado</h4>
+                        <p class="text-white/80">Scripts inteligentes que se adaptam ao ambiente para maximizar seu ganho de experiência e loot.</p>
+                    </div>
+                    <!-- Recurso 2 -->
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="bg-white/20 p-5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-bold text-white">Healer Inteligente</h4>
+                        <p class="text-white/80">Configuração precisa para garantir sua sobrevivência, usando poções e magias apenas quando necessário.</p>
+                    </div>
+                    <!-- Recurso 3 -->
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="bg-white/20 p-5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-bold text-white">Setup Leve e Personalizável</h4>
+                        <p class="text-white/80">Interface limpa e baixo consumo de CPU para que seu foco permaneça no jogo, não na ferramenta.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Seção de Assinatura -->
+        <section id="planos" class="bg-[#F4F4F4] py-20 lg:py-32 px-6 section-fade-in">
+            <div class="max-w-6xl mx-auto text-center">
+                <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00] mb-16">
+                    Acesso Total flmR
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                    
+                    <!-- Plano 1: Básico -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-transform duration-300 hover:scale-105 h-full flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-500">PLANO BÁSICO</h3>
+                        <p class="my-4">
+                            <span class="text-6xl font-black">€30</span>
+                            <span class="text-lg text-gray-500">/mês</span>
+                        </p>
+                        <ul class="space-y-3 text-left my-8 flex-grow">
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Acesso a scripts essenciais</li>
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Healer Inteligente</li>
+                            <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Cavehunting Avançado</li>
+                             <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Suporte Prioritário</li>
+                        </ul>
+                        <button class="w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                            ESCOLHER PLANO
+                        </button>
+                    </div>
+        
+                    <!-- Plano 2: PRO (Destaque) -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-8 text-gray-800 relative border-4 border-[#C81113] lg:scale-110 h-full flex flex-col">
+                         <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-[#C81113] text-white px-6 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
+                            Mais Popular
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-500">PLANO PRO</h3>
+                        <p class="my-4">
+                            <span class="text-4xl line-through text-gray-400">€90</span>
+                            <span class="text-7xl font-black text-[#C81113]">€60</span>
+                            <span class="text-lg text-gray-500">/mês</span>
+                        </p>
+                        <ul class="space-y-3 text-left my-8 flex-grow">
+                             <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Acesso a scripts essenciais</li>
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Healer Inteligente</li>
+                            <li class="flex items-center font-bold"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Cavehunting Avançado</li>
+                             <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Suporte Prioritário</li>
+                        </ul>
+                        <button class="w-full mt-auto bg-[#C81113] text-white font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-red-800 transition-transform transform hover:scale-105 duration-300">
+                            ASSINAR AGORA
+                        </button>
+                    </div>
+        
+                    <!-- Plano 3: Anual -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-transform duration-300 hover:scale-105 h-full flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-500">PLANO ANUAL</h3>
+                        <p class="my-4">
+                            <span class="text-6xl font-black">€45</span>
+                            <span class="text-lg text-gray-500">/mês</span>
+                        </p>
+                         <p class="text-sm text-gray-500 -mt-3">(Cobrado anualmente) </p>
+                        <ul class="space-y-3 text-left my-8 flex-grow">
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Acesso a scripts essenciais</li>
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Healer Inteligente</li>
+                            <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Cavehunting Avançado</li>
+                             <li class="flex items-center font-bold"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Suporte Prioritário</li>
+                        </ul>
+                        <button class="w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                            ESCOLHER PLANO
+                        </button>
+                    </div>
+        
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Seção de Download e Prova Social -->
+        <section class="bg-[#F86C00] py-20 lg:py-32 px-6 text-center section-fade-in">
+            <div class="max-w-3xl mx-auto space-y-6">
+                 <h3 class="text-3xl md:text-5xl font-extrabold text-white">
+                    Junte-se a uma legião de jogadores otimizados.
+                </h3>
+                <div>
+                    <p class="text-white/80 text-lg">Downloads Atuais:</p>
+                    <p id="downloadCounter" class="text-6xl md:text-8xl font-black text-white my-2">0</p>
+                </div>
+                <button id="downloadButton" class="bg-white text-orange-600 font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-gray-200 transition-transform transform hover:scale-105 duration-300">
+                    BAIXAR O CLIENT flmR
+                </button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Rodapé -->
+    <footer class="bg-[#F86C00] py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-white/70 text-sm">
+                &copy; 2025 flmR Project. Todos os direitos reservados.
+            </p>
+        </div>
+    </footer>
+<!-- By: Higor -->
+</body>
+</html>
