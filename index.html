@@ -35,6 +35,14 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+            .blinking-cursor {
+                font-weight: 300;
+                animation: blink 1s step-end infinite;
+            }
+            @keyframes blink {
+                from, to { color: transparent }
+                50% { color: white; }
+            }
         }
     </style>
 </head>
@@ -63,14 +71,12 @@
 
             let initialCount = 0;
 
-            // Listener em tempo real para o contador
             const unsubscribe = onSnapshot(counterDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     initialCount = data.count;
                     animateCounter(initialCount);
                 } else {
-                    // Se o contador não existir, cria com um número inicial
                     initialCount = 14782; 
                     setDoc(counterDocRef, { count: initialCount });
                     animateCounter(initialCount);
@@ -79,7 +85,6 @@
                 console.error("Erro no listener do Firestore:", error);
             });
 
-            // Função para animar o contador
             function animateCounter(target) {
                 if (!downloadCounterElement) return;
                 let current = 0;
@@ -95,19 +100,16 @@
                 }, 20);
             }
             
-            // Ação do botão de download
             if (downloadButton) {
                 downloadButton.addEventListener('click', async () => {
                     try {
                         const newCount = initialCount + 1;
                         await setDoc(counterDocRef, { count: newCount }, { merge: true });
-                        // Adiciona um feedback visual
                         downloadButton.innerText = 'DOWNLOAD INICIADO!';
                         downloadButton.disabled = true;
                         downloadButton.classList.remove('bg-white', 'hover:bg-gray-200', 'text-orange-600');
                         downloadButton.classList.add('bg-green-500', 'text-white', 'cursor-not-allowed');
                         
-                        // Simula o download e reseta o botão
                         setTimeout(() => {
                             downloadButton.innerText = 'BAIXAR O CLIENT flmR';
                             downloadButton.disabled = false;
@@ -127,7 +129,6 @@
             try {
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        // Usuário está autenticado, configurar listeners
                         console.log("Autenticação bem-sucedida, UID:", user.uid);
                         setupFirestoreListeners(user.uid);
                     } else {
@@ -135,7 +136,6 @@
                     }
                 });
 
-                // Tenta autenticar
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                      await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -145,6 +145,43 @@
                 console.error("Erro durante o processo de autenticação:", error);
             }
         })();
+
+        // --- Lógica de Animação de Digitação ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const typingTextElement = document.getElementById('typing-text');
+            if (typingTextElement) {
+                const words = ["Aventura.", "Estratégia.", "Domínio.", "Glória.", "Poder.", "Liberdade."];
+                let wordIndex = 0;
+                let charIndex = 0;
+                let isDeleting = false;
+
+                function type() {
+                    const currentWord = words[wordIndex];
+                    let typeSpeed = isDeleting ? 100 : 200;
+
+                    if (isDeleting) {
+                        typingTextElement.textContent = currentWord.substring(0, charIndex - 1);
+                        charIndex--;
+                    } else {
+                        typingTextElement.textContent = currentWord.substring(0, charIndex + 1);
+                        charIndex++;
+                    }
+
+                    if (!isDeleting && charIndex === currentWord.length) {
+                        typeSpeed = 2000;
+                        isDeleting = true;
+                    } else if (isDeleting && charIndex === 0) {
+                        isDeleting = false;
+                        wordIndex = (wordIndex + 1) % words.length;
+                        typeSpeed = 500;
+                    }
+
+                    setTimeout(type, typeSpeed);
+                }
+                setTimeout(type, 1000);
+            }
+        });
+
 
         // --- Animações de Scroll ---
         const sections = document.querySelectorAll('.section-fade-in');
@@ -165,17 +202,19 @@
     <!-- 1. Seção Principal (Topo) -->
     <header class="min-h-screen flex flex-col items-center justify-center text-center p-8 bg-[#F86C00]">
         <div class="space-y-6 max-w-4xl mx-auto section-fade-in">
-            <!-- Logo -->
-            <img src="logo.png" alt="Logo flmR" class="w-64 md:w-80 mx-auto mb-4" onerror="this.onerror=null;this.src='https://placehold.co/320x100/F86C00/FFFFFF?text=flmR&font=montserrat';">
-
-            <!-- Título Principal -->
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white shadow-lg">
-                Sua jornada no Tibia, potencializada.
+            <!-- Logo Inovador -->
+            <h1 class="text-7xl md:text-9xl font-black text-white" style="font-family: 'Montserrat', sans-serif;">
+                flm<span class="text-[#C81113]">R</span>
             </h1>
+            
+            <!-- Texto com Animação de Digitação -->
+            <p class="text-2xl md:text-4xl text-white/90 font-['Roboto'] h-12 md:h-16">
+                <span id="typing-text"></span><span class="blinking-cursor">|</span>
+            </p>
 
             <!-- Subtítulo -->
-            <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
-                flmR é a ferramenta definitiva para automatizar o tedioso e liberar você para o que realmente importa: a aventura, a estratégia e a glória.
+            <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto pt-4">
+                A ferramenta definitiva para automatizar o tedioso e liberar você para o que realmente importa.
             </p>
 
             <!-- Botão de Ação -->
@@ -207,7 +246,7 @@
         <section class="bg-[#F86C00] py-20 lg:py-32 px-6 section-fade-in">
             <div class="max-w-6xl mx-auto">
                 <h3 class="text-3xl md:text-5xl font-extrabold text-center text-white mb-16">
-                    Ferramentas para a Vitória
+                    Ferramentas para o Top1
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 text-center">
                     <!-- Recurso 1 -->
@@ -342,6 +381,7 @@
             </p>
         </div>
     </footer>
-<!-- By: Higor -->
+
 </body>
 </html>
+
