@@ -103,18 +103,17 @@
             if (downloadButton) {
                 downloadButton.addEventListener('click', async () => {
                     try {
+                        const originalClasses = downloadButton.className;
                         const newCount = initialCount + 1;
                         await setDoc(counterDocRef, { count: newCount }, { merge: true });
                         downloadButton.innerText = 'DOWNLOAD INICIADO!';
                         downloadButton.disabled = true;
-                        downloadButton.classList.remove('bg-white', 'hover:bg-gray-200', 'text-orange-600');
-                        downloadButton.classList.add('bg-green-500', 'text-white', 'cursor-not-allowed');
+                        downloadButton.className = 'inline-block bg-green-500 text-white font-bold text-base px-10 py-4 rounded-full shadow-lg cursor-not-allowed transition-all duration-300';
                         
                         setTimeout(() => {
-                            downloadButton.innerText = 'BAIXAR O CLIENT flmR';
+                            downloadButton.innerText = 'Download';
                             downloadButton.disabled = false;
-                            downloadButton.classList.add('bg-white', 'hover:bg-gray-200', 'text-orange-600');
-                            downloadButton.classList.remove('bg-green-500', 'text-white', 'cursor-not-allowed');
+                            downloadButton.className = originalClasses;
                         }, 3000);
 
                     } catch (error) {
@@ -146,18 +145,19 @@
             }
         })();
 
-        // --- Lógica de Animação de Digitação ---
+        // --- Lógicas do DOM ---
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Lógica de Animação de Digitação ---
             const typingTextElement = document.getElementById('typing-text');
             if (typingTextElement) {
-                const words = ["Aventura.", "Estratégia.", "Domínio.", "Glória.", "Poder.", "Liberdade."];
+                const words = ["Cavebot.", "Auto Loot.", "Healer.", "Indetectável.", "Pro."];
                 let wordIndex = 0;
                 let charIndex = 0;
                 let isDeleting = false;
 
                 function type() {
                     const currentWord = words[wordIndex];
-                    let typeSpeed = isDeleting ? 100 : 200;
+                    let typeSpeed = isDeleting ? 13 : 22;
 
                     if (isDeleting) {
                         typingTextElement.textContent = currentWord.substring(0, charIndex - 1);
@@ -166,36 +166,82 @@
                         typingTextElement.textContent = currentWord.substring(0, charIndex + 1);
                         charIndex++;
                     }
-
+                    
                     if (!isDeleting && charIndex === currentWord.length) {
-                        typeSpeed = 2000;
+                        typeSpeed = 1200;
                         isDeleting = true;
-                    } else if (isDeleting && charIndex === 0) {
+                    } 
+                    else if (isDeleting && charIndex === 0) {
                         isDeleting = false;
                         wordIndex = (wordIndex + 1) % words.length;
-                        typeSpeed = 500;
+                        typeSpeed = 300;
                     }
 
                     setTimeout(type, typeSpeed);
                 }
                 setTimeout(type, 1000);
             }
-        });
 
-
-        // --- Animações de Scroll ---
-        const sections = document.querySelectorAll('.section-fade-in');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('section-visible');
-                    observer.unobserve(entry.target);
-                }
+            // --- Animações de Scroll ---
+            const sections = document.querySelectorAll('.section-fade-in');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('section-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            sections.forEach(section => {
+                observer.observe(section);
             });
-        }, { threshold: 0.1 });
 
-        sections.forEach(section => {
-            observer.observe(section);
+            // --- Lógica de Seleção de Planos ---
+            const planButtons = document.querySelectorAll('.plan-button');
+            const allPlans = document.querySelectorAll('.pricing-plan');
+            
+            planButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const clickedPlan = e.target.closest('.pricing-plan');
+                    
+                    // 1. Reseta todos os planos para o estado padrão
+                    allPlans.forEach(plan => {
+                        plan.classList.remove('border-[#C81113]');
+                        plan.classList.add('border-transparent');
+                        plan.querySelector('.plan-tag')?.classList.add('opacity-0');
+                        const btn = plan.querySelector('.plan-button');
+                        btn.innerText = 'ESCOLHER PLANO';
+                        btn.classList.remove('bg-[#C81113]', 'text-white', 'hover:bg-red-800');
+                        btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-[#C81113]', 'hover:text-white');
+
+                        // Reseta cor do ícone e do preço
+                        const icon = plan.querySelector('.mb-4 > svg');
+                        const price = plan.querySelector('.plan-price');
+                        icon.classList.remove('text-[#C81113]');
+                        icon.classList.add('text-gray-400');
+                        price.classList.remove('text-[#C81113]');
+                        price.classList.add('text-gray-900');
+                    });
+
+                    // 2. Aplica o estilo de selecionado ao plano clicado
+                    clickedPlan.classList.add('border-[#C81113]');
+                    clickedPlan.classList.remove('border-transparent');
+                    clickedPlan.querySelector('.plan-tag')?.classList.remove('opacity-0');
+                    
+                    const clickedButton = clickedPlan.querySelector('.plan-button');
+                    clickedButton.innerText = 'ASSINAR AGORA';
+                    clickedButton.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-[#C81113]', 'hover:text-white');
+                    clickedButton.classList.add('bg-[#C81113]', 'text-white', 'hover:bg-red-800');
+
+                    // Aplica cor ao ícone e preço selecionado
+                    const clickedIcon = clickedPlan.querySelector('.mb-4 > svg');
+                    const clickedPrice = clickedPlan.querySelector('.plan-price');
+                    clickedIcon.classList.remove('text-gray-400');
+                    clickedIcon.classList.add('text-[#C81113]');
+                    clickedPrice.classList.remove('text-gray-900');
+                    clickedPrice.classList.add('text-[#C81113]');
+                });
+            });
         });
     </script>
     
@@ -212,31 +258,40 @@
                 <span id="typing-text"></span><span class="blinking-cursor">|</span>
             </p>
 
-            <!-- Subtítulo -->
-            <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto pt-4">
-                A ferramenta definitiva para automatizar o tedioso e liberar você para o que realmente importa.
-            </p>
-
-            <!-- Botão de Ação -->
-            <a href="#planos" class="inline-block bg-[#C81113] text-white font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-red-800 transition-transform transform hover:scale-105 duration-300">
-                VER PLANOS
-            </a>
+            <!-- Botões de Ação -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+                <a href="#saiba-mais" class="inline-block bg-[#C81113] text-white font-bold text-base px-8 py-3 rounded-full shadow-xl hover:bg-red-800 transition-colors duration-300">
+                    Saiba mais
+                </a>
+                <a href="#planos" class="inline-block bg-transparent text-white font-bold text-base px-8 py-3 rounded-full shadow-lg hover:bg-white hover:text-[#F86C00] transition-all duration-300 [box-shadow:inset_0_0_0_2px_#fff]">
+                    Comprar
+                </a>
+            </div>
         </div>
     </header>
 
     <main>
-        <!-- 2. Seção de Apresentação (Apelo Emocional) -->
-        <section class="bg-[#F4F4F4] text-gray-800 py-20 lg:py-32 px-6 section-fade-in">
+        <!-- 2. Seção de Segurança (100% Indetectável) -->
+        <section id="saiba-mais" class="bg-[#F4F4F4] text-gray-800 py-20 lg:py-32 px-6 section-fade-in">
             <div class="max-w-4xl mx-auto text-center space-y-8">
-                <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00]">
-                    Jogue com inteligência, não com esforço.
-                </h2>
+                 <!-- Ícone de Escudo -->
+                <div class="mx-auto bg-[#F86C00] h-20 w-20 flex items-center justify-center rounded-full shadow-lg">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00]">
+                        100% Indetectável.
+                    </h2>
+                    <p class="text-2xl md:text-4xl font-bold text-[#C81113]">Jogue sem medo.</p>
+                </div>
                 <div class="text-base md:text-lg text-gray-600 space-y-4 max-w-3xl mx-auto">
                     <p>
-                        Cansado de passar horas em hunts repetitivas apenas para manter seu level? De perder tempo com tarefas que não trazem diversão? O verdadeiro espírito do Tibia está nas quests desafiadoras, nas team hunts com amigos e na emoção do combate.
+                        A maior preocupação de todo jogador que busca otimização é uma só: o risco de detecção. Nós entendemos isso. Por isso, a segurança é o pilar central do flmR.
                     </p>
-                    <p class="font-semibold">
-                        O flmR cuida do trabalho pesado. Nossa ferramenta otimiziza suas tarefas diárias de forma segura e eficiente, permitindo que você foque em dominar o jogo. Liberte seu tempo e potencialize seu progresso.
+                    <p class="font-semibold text-gray-800">
+                        Nossa ferramenta opera com uma tecnologia de simulação humana avançada, que não interage diretamente com o cliente do jogo. O resultado? Uma operação completamente invisível para qualquer sistema anti-cheat.
                     </p>
                 </div>
             </div>
@@ -246,7 +301,7 @@
         <section class="bg-[#F86C00] py-20 lg:py-32 px-6 section-fade-in">
             <div class="max-w-6xl mx-auto">
                 <h3 class="text-3xl md:text-5xl font-extrabold text-center text-white mb-16">
-                    Ferramentas para o Top1
+                    Funções
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 text-center">
                     <!-- Recurso 1 -->
@@ -257,7 +312,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </div>
-                        <h4 class="text-2xl font-bold text-white">Cavehunting Avançado</h4>
+                        <h4 class="text-2xl font-bold text-white">Cavebot Avançado</h4>
                         <p class="text-white/80">Scripts inteligentes que se adaptam ao ambiente para maximizar seu ganho de experiência e loot.</p>
                     </div>
                     <!-- Recurso 2 -->
@@ -268,7 +323,7 @@
                             </svg>
                         </div>
                         <h4 class="text-2xl font-bold text-white">Healer Inteligente</h4>
-                        <p class="text-white/80">Configuração precisa para garantir sua sobrevivência, usando poções e magias apenas quando necessário.</p>
+                        <p class="text-white/80">Configuração precisa para garantir sua sobrevivência, além de membros da sua party, tanto em hunt, como também em war.</p>
                     </div>
                     <!-- Recurso 3 -->
                     <div class="flex flex-col items-center space-y-4">
@@ -278,8 +333,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <h4 class="text-2xl font-bold text-white">Setup Leve e Personalizável</h4>
-                        <p class="text-white/80">Interface limpa e baixo consumo de CPU para que seu foco permaneça no jogo, não na ferramenta.</p>
+                        <h4 class="text-2xl font-bold text-white">Leve e Intuitivo</h4>
+                        <p class="text-white/80">Interface limpa e baixo consumo de CPU para que seu foco permaneça no que realmente importa.</p>
                     </div>
                 </div>
             </div>
@@ -288,16 +343,26 @@
         <!-- 4. Seção de Assinatura -->
         <section id="planos" class="bg-[#F4F4F4] py-20 lg:py-32 px-6 section-fade-in">
             <div class="max-w-6xl mx-auto text-center">
-                <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00] mb-16">
-                    Acesso Total flmR
+                <h2 class="text-3xl md:text-5xl font-extrabold text-[#F86C00] mb-24">
+                    Assinatura flm<span class="text-[#C81113]">R</span>
                 </h2>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     
                     <!-- Plano 1: Básico -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-transform duration-300 hover:scale-105 h-full flex flex-col">
+                    <div class="pricing-plan bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-colors duration-300 h-full flex flex-col relative border-4 border-transparent">
+                        <div class="relative h-8">
+                            <div class="plan-tag opacity-0 transition-opacity duration-300 absolute top-0 left-1/2 -translate-x-1/2 bg-[#C81113] text-white px-6 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
+                                Iniciante
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
                         <h3 class="text-2xl font-bold text-gray-500">PLANO BÁSICO</h3>
                         <p class="my-4">
-                            <span class="text-6xl font-black">€30</span>
+                            <span class="plan-price text-6xl font-black text-gray-900">€30</span>
                             <span class="text-lg text-gray-500">/mês</span>
                         </p>
                         <ul class="space-y-3 text-left my-8 flex-grow">
@@ -306,20 +371,28 @@
                             <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Cavehunting Avançado</li>
                              <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Suporte Prioritário</li>
                         </ul>
-                        <button class="w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                        <button class="plan-button w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-[#C81113] hover:text-white transition-colors duration-300">
                             ESCOLHER PLANO
                         </button>
                     </div>
         
-                    <!-- Plano 2: PRO (Destaque) -->
-                    <div class="bg-white rounded-2xl shadow-2xl p-8 text-gray-800 relative border-4 border-[#C81113] lg:scale-110 h-full flex flex-col">
-                         <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-[#C81113] text-white px-6 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
-                            Mais Popular
+                    <!-- Plano 2: MAIN (Destaque) -->
+                    <div class="pricing-plan bg-white rounded-2xl shadow-2xl p-8 text-gray-800 relative border-4 border-[#C81113] h-full flex flex-col transition-colors duration-300">
+                         <div class="relative h-8">
+                            <div class="plan-tag transition-opacity duration-300 absolute top-0 left-1/2 -translate-x-1/2 bg-[#C81113] text-white px-6 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
+                                Recomendado
+                            </div>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-500">PLANO PRO</h3>
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-[#C81113]" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-500">PLANO MAIN</h3>
                         <p class="my-4">
                             <span class="text-4xl line-through text-gray-400">€90</span>
-                            <span class="text-7xl font-black text-[#C81113]">€60</span>
+                            <span class="plan-price text-7xl font-black text-[#C81113]">€60</span>
                             <span class="text-lg text-gray-500">/mês</span>
                         </p>
                         <ul class="space-y-3 text-left my-8 flex-grow">
@@ -328,16 +401,26 @@
                             <li class="flex items-center font-bold"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Cavehunting Avançado</li>
                              <li class="flex items-center text-gray-400"><svg class="w-6 h-6 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Suporte Prioritário</li>
                         </ul>
-                        <button class="w-full mt-auto bg-[#C81113] text-white font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-red-800 transition-transform transform hover:scale-105 duration-300">
+                        <button class="plan-button w-full mt-auto bg-[#C81113] text-white font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-red-800 transition-colors duration-300">
                             ASSINAR AGORA
                         </button>
                     </div>
         
                     <!-- Plano 3: Anual -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-transform duration-300 hover:scale-105 h-full flex flex-col">
+                    <div class="pricing-plan bg-white rounded-2xl shadow-xl p-8 text-gray-800 transition-colors duration-300 h-full flex flex-col relative border-4 border-transparent">
+                        <div class="relative h-8">
+                            <div class="plan-tag opacity-0 transition-opacity duration-300 absolute top-0 left-1/2 -translate-x-1/2 bg-[#C81113] text-white px-6 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
+                                Pro
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </div>
                         <h3 class="text-2xl font-bold text-gray-500">PLANO ANUAL</h3>
                         <p class="my-4">
-                            <span class="text-6xl font-black">€45</span>
+                            <span class="plan-price text-6xl font-black text-gray-900">€45</span>
                             <span class="text-lg text-gray-500">/mês</span>
                         </p>
                          <p class="text-sm text-gray-500 -mt-3">(Cobrado anualmente) </p>
@@ -347,11 +430,14 @@
                             <li class="flex items-center"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Cavehunting Avançado</li>
                              <li class="flex items-center font-bold"><svg class="w-6 h-6 text-green-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Suporte Prioritário</li>
                         </ul>
-                        <button class="w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                        <button class="plan-button w-full mt-auto bg-gray-200 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg hover:bg-[#C81113] hover:text-white transition-colors duration-300">
                             ESCOLHER PLANO
                         </button>
                     </div>
         
+                </div>
+                <div class="mt-16 text-center text-sm text-gray-500">
+                    <p>Pagamento seguro via PIX, cartão ou boleto</p>
                 </div>
             </div>
         </section>
@@ -360,14 +446,14 @@
         <section class="bg-[#F86C00] py-20 lg:py-32 px-6 text-center section-fade-in">
             <div class="max-w-3xl mx-auto space-y-6">
                  <h3 class="text-3xl md:text-5xl font-extrabold text-white">
-                    Junte-se a uma legião de jogadores otimizados.
+                    Eleve seu jogo.
                 </h3>
                 <div>
                     <p class="text-white/80 text-lg">Downloads Atuais:</p>
                     <p id="downloadCounter" class="text-6xl md:text-8xl font-black text-white my-2">0</p>
                 </div>
-                <button id="downloadButton" class="bg-white text-orange-600 font-bold text-lg px-10 py-4 rounded-lg shadow-xl hover:bg-gray-200 transition-transform transform hover:scale-105 duration-300">
-                    BAIXAR O CLIENT flmR
+                <button id="downloadButton" class="inline-block bg-transparent text-white font-bold text-base px-10 py-4 rounded-full shadow-lg hover:bg-white hover:text-[#F86C00] transition-all duration-300 [box-shadow:inset_0_0_0_2px_#fff]">
+                    Download
                 </button>
             </div>
         </section>
