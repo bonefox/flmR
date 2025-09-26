@@ -43,6 +43,22 @@
                 from, to { color: transparent }
                 50% { color: white; }
             }
+            .bg-grid-pattern {
+                background-color: #e5e7eb; /* bg-gray-200 */
+                background-image:
+                    linear-gradient(rgba(156, 163, 175, .4) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(156, 163, 175, .4) 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .feature-button {
+                @apply bg-[#C81113] text-white font-bold py-3 px-4 rounded-lg shadow-lg border-b-4 border-red-800 transform transition-all duration-150;
+            }
+            .feature-button:hover {
+                @apply bg-red-500;
+            }
+            .feature-button:active {
+                @apply bg-red-500 translate-y-1 border-b-2;
+            }
         }
     </style>
 </head>
@@ -150,7 +166,7 @@
             // --- Lógica de Animação de Digitação ---
             const typingTextElement = document.getElementById('typing-text');
             if (typingTextElement) {
-                const words = ["Cavebot.", "Auto Loot.", "Healer.", "Indetectável.", "Pro."];
+                const words = ["Cavebot.", "Auto Loot.", "Healer.", "Indetectável.", "Only for Pro."];
                 let wordIndex = 0;
                 let charIndex = 0;
                 let isDeleting = false;
@@ -297,46 +313,51 @@
             </div>
         </section>
 
-        <!-- 3. Seção de Recursos -->
+        <!-- 3. Seção de Funções -->
         <section class="bg-[#F86C00] py-20 lg:py-32 px-6 section-fade-in">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-4xl mx-auto">
                 <h3 class="text-3xl md:text-5xl font-extrabold text-center text-white mb-16">
                     Funções
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 text-center">
-                    <!-- Recurso 1 -->
-                    <div class="flex flex-col items-center space-y-4">
-                        <div class="bg-white/20 p-5 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
+
+                <!-- Painel da Interface -->
+                <div class="bg-gray-200/95 backdrop-blur-sm rounded-lg shadow-2xl text-left relative border border-gray-300/50">
+                    <!-- Barra de Título -->
+                    <div class="flex justify-between items-center p-3 border-b border-gray-300/80 bg-gray-100/80 rounded-t-lg">
+                        <div class="flex items-center gap-2">
+                            <svg class="h-6 w-6 text-[#F86C00]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 11.5a1 1 0 01-1.898-.659l4-11.5a1 1 0 011.265-.606zM11 6a1 1 0 10-2 0h2z" clip-rule="evenodd" /></svg>
+                            <h4 class="text-lg font-bold text-gray-700">flmR Control Panel</h4>
                         </div>
-                        <h4 class="text-2xl font-bold text-white">Cavebot Avançado</h4>
-                        <p class="text-white/80">Scripts inteligentes que se adaptam ao ambiente para maximizar seu ganho de experiência e loot.</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 bg-green-400 rounded-full border border-green-500/50"></div>
+                            <div class="w-4 h-4 bg-red-500 rounded-full border border-red-600/50"></div>
+                        </div>
                     </div>
-                    <!-- Recurso 2 -->
-                    <div class="flex flex-col items-center space-y-4">
-                        <div class="bg-white/20 p-5 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
+
+                    <!-- Área de Conteúdo com Grid -->
+                    <div class="p-6 md:p-10 bg-grid-pattern">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <button class="feature-button">Auto Heal</button>
+                            <button class="feature-button">Mana Restore</button>
+                            <button class="feature-button">Spells / Runes</button>
+                            <button class="feature-button">Alarms</button>
+                            <button class="feature-button">Misc Tools</button>
+                            <button class="feature-button">Auto Loot</button>
+                            <button class="feature-button">Trainer</button>
+                            <button class="feature-button">CaveBot</button>
                         </div>
-                        <h4 class="text-2xl font-bold text-white">Healer Inteligente</h4>
-                        <p class="text-white/80">Configuração precisa para garantir sua sobrevivência, além de membros da sua party, tanto em hunt, como também em war.</p>
                     </div>
-                    <!-- Recurso 3 -->
-                    <div class="flex flex-col items-center space-y-4">
-                        <div class="bg-white/20 p-5 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-2xl font-bold text-white">Leve e Intuitivo</h4>
-                        <p class="text-white/80">Interface limpa e baixo consumo de CPU para que seu foco permaneça no que realmente importa.</p>
+
+                    <!-- Barra de Status -->
+                    <div class="p-3 border-t border-gray-300/80 bg-gray-100/80 rounded-b-lg flex justify-between items-center text-gray-500 text-sm font-semibold">
+                        <span>Status: <span class="font-bold text-green-600">Protected</span></span>
+                        <span>Disconnected</span>
                     </div>
                 </div>
+                
+                <p class="text-white/90 text-center mt-12 max-w-2xl mx-auto">
+                    As melhores ferramentas são aquelas que se tornam invisíveis. Por isso, projetamos uma interface que é, ao mesmo tempo, protegida até o núcleo e absolutamente natural de usar.
+                </p>
             </div>
         </section>
 
@@ -470,4 +491,5 @@
 
 </body>
 </html>
+
 
